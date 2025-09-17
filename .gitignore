@@ -2,7 +2,7 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl should be tracked
 terraform.tfvars
 *.tfplan
 deploy_lambda.zip
