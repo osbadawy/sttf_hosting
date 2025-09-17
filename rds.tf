@@ -25,7 +25,7 @@ resource "aws_security_group" "rds_sg" {
 
 # DB Subnet Group
 resource "aws_db_subnet_group" "sttf_db_subnet_group" {
-  name       = "sttf-db-subnet-group"
+  name = "sttf-db-subnet-group"
   subnet_ids = [
     data.aws_subnet.subnet1.id,
     data.aws_subnet.subnet2.id
@@ -52,29 +52,29 @@ data "aws_subnet" "subnet2" {
 # Staging RDS Instance
 resource "aws_db_instance" "sttf_api_staging_db" {
   identifier = "sttf-api-staging-db"
-  
+
   engine         = "postgres"
   engine_version = "15.14"
   instance_class = "db.t3.micro"
-  
+
   allocated_storage     = 20
   max_allocated_storage = 100
   storage_type          = "gp2"
   storage_encrypted     = true
-  
+
   username = "sttf_admin"
   password = var.staging_db_password
-  
+
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.sttf_db_subnet_group.name
-  
+
   backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
-  
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "sun:04:00-sun:05:00"
+
   skip_final_snapshot = true
   deletion_protection = false
-  
+
   tags = {
     Name        = "sttf-api-staging-db"
     Environment = "staging"
@@ -85,29 +85,29 @@ resource "aws_db_instance" "sttf_api_staging_db" {
 # Production RDS Instance
 resource "aws_db_instance" "sttf_api_prod_db" {
   identifier = "sttf-api-prod-db"
-  
+
   engine         = "postgres"
   engine_version = "15.14"
   instance_class = "db.t3.micro"
-  
+
   allocated_storage     = 20
   max_allocated_storage = 100
   storage_type          = "gp2"
   storage_encrypted     = true
-  
+
   username = "sttf_admin"
   password = var.prod_db_password
-  
+
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.sttf_db_subnet_group.name
-  
+
   backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
-  
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "sun:04:00-sun:05:00"
+
   skip_final_snapshot = true
   deletion_protection = false
-  
+
   tags = {
     Name        = "sttf-api-prod-db"
     Environment = "production"

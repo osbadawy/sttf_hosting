@@ -20,9 +20,35 @@ aws configure set region ${aws_region}
 # Login to ECR
 aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_url}
 
-# Pull and run the :prod image
+# Create environment file for production
+cat > /home/ec2-user/.env << 'EOF'
+# Database configuration (PostgreSQL)
+POSTGRES_HOST=${db_endpoint}
+POSTGRES_PORT=${db_port}
+POSTGRES_DB=${db_name}
+POSTGRES_USER=${db_username}
+POSTGRES_PASSWORD=${prod_db_password}
+
+# Environment
+NODE_ENV=production
+ENVIRONMENT=production
+
+# Custom environment variables
+%{ for key, value in env_vars ~}
+${key}=${value}
+%{ endfor ~}
+EOF
+
+# Replace the template variables in the .env file
+sed -i "s/\${db_endpoint}/${db_endpoint}/g" /home/ec2-user/.env
+sed -i "s/\${db_port}/${db_port}/g" /home/ec2-user/.env
+sed -i "s/\${db_name}/${db_name}/g" /home/ec2-user/.env
+sed -i "s/\${db_username}/${db_username}/g" /home/ec2-user/.env
+sed -i "s/\${prod_db_password}/${prod_db_password}/g" /home/ec2-user/.env
+
+# Pull and run the :prod image with environment variables
 docker pull ${ecr_repository_url}:prod
-docker run -d -p 80:80 --name sttf-api-prod ${ecr_repository_url}:prod
+docker run -d -p 80:80 --name sttf-api-prod --env-file /home/ec2-user/.env ${ecr_repository_url}:prod
 
 # Create a simple health check
 echo "#!/bin/bash" > /home/ec2-user/health_check.sh
