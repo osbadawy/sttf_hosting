@@ -1,0 +1,6 @@
+# Copy this file to terraform.tfvars and fill in your actual values
+# terraform.tfvars is ignored by git for security
+
+# Database passwords
+staging_db_password = "your-staging-db-password-here"
+prod_db_password    = "your-production-db-password-here"
