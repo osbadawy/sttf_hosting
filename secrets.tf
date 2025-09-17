@@ -1,6 +1,6 @@
 # AWS Secrets Manager secrets for staging
 resource "aws_secretsmanager_secret" "staging_secrets" {
-  name                    = "SttfApiStagingContainerSecrets"
+  name                    = "SttfApiStagingContainerSecrets-v2"
   description             = "Environment variables for STTF backend staging container"
   recovery_window_in_days = 7
 
@@ -58,7 +58,7 @@ resource "aws_secretsmanager_secret_version" "staging_secrets" {
 
 # AWS Secrets Manager secrets for production
 resource "aws_secretsmanager_secret" "prod_secrets" {
-  name                    = "SttfApiProdContainerSecrets"
+  name                    = "SttfApiProdContainerSecrets-v2"
   description             = "Environment variables for STTF backend production container"
   recovery_window_in_days = 7
 

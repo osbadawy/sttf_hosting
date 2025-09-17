@@ -27,7 +27,7 @@ aws ecr get-login-password --region ${aws_region} | docker login --username AWS 
 docker pull ${ecr_repository_url}:latest
 docker run -d -p 5000:5000 --name sttf-api-staging \
   --env-file <(aws secretsmanager get-secret-value \
-    --secret-id SttfApiStagingContainerSecrets \
+    --secret-id SttfApiStagingContainerSecrets-v2 \
     --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]') \
   ${ecr_repository_url}:latest
 

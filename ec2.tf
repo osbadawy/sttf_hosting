@@ -2,6 +2,7 @@
 resource "aws_instance" "sttf_api_staging" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.sttf_private_subnet_1.id
   vpc_security_group_ids = [aws_security_group.sttf_api_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.sttf_api_profile.name
   key_name               = var.key_pair_name
@@ -28,6 +29,7 @@ resource "aws_instance" "sttf_api_staging" {
 resource "aws_instance" "sttf_api_prod" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.sttf_private_subnet_2.id
   vpc_security_group_ids = [aws_security_group.sttf_api_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.sttf_api_profile.name
   key_name               = var.key_pair_name

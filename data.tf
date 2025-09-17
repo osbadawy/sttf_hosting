@@ -12,10 +12,10 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# Data source to get default VPC
-data "aws_vpc" "default" {
-  default = true
-}
+# Data source to get default VPC (kept for reference, but we're using custom VPC now)
+# data "aws_vpc" "default" {
+#   default = true
+# }
 
 # Data source to get available AZs
 data "aws_availability_zones" "available" {

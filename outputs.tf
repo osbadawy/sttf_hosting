@@ -71,6 +71,96 @@ output "prod_db_port" {
   value       = aws_db_instance.sttf_api_prod_db.port
 }
 
+# ALB Outputs
+output "prod_alb_dns_name" {
+  description = "The DNS name of the Production Application Load Balancer"
+  value       = aws_lb.sttf_prod_alb.dns_name
+}
+
+output "prod_alb_zone_id" {
+  description = "The zone ID of the Production Application Load Balancer"
+  value       = aws_lb.sttf_prod_alb.zone_id
+}
+
+output "prod_alb_arn" {
+  description = "The ARN of the Production Application Load Balancer"
+  value       = aws_lb.sttf_prod_alb.arn
+}
+
+output "staging_alb_dns_name" {
+  description = "The DNS name of the Staging Application Load Balancer"
+  value       = aws_lb.sttf_staging_alb.dns_name
+}
+
+output "staging_alb_zone_id" {
+  description = "The zone ID of the Staging Application Load Balancer"
+  value       = aws_lb.sttf_staging_alb.zone_id
+}
+
+output "staging_alb_arn" {
+  description = "The ARN of the Staging Application Load Balancer"
+  value       = aws_lb.sttf_staging_alb.arn
+}
+
+# Domain Outputs
+output "api_domain_name" {
+  description = "The domain name for the production API (if configured)"
+  value       = var.domain_name != "" ? var.domain_name : "No domain configured - use ALB DNS name"
+}
+
+output "staging_api_domain_name" {
+  description = "The domain name for the staging API (if configured)"
+  value       = var.domain_name != "" ? "staging.${var.domain_name}" : "No domain configured - use ALB DNS name"
+}
+
+output "api_url" {
+  description = "The URL for the production API"
+  value       = var.domain_name != "" ? "https://${var.domain_name}" : "http://${aws_lb.sttf_prod_alb.dns_name}"
+}
+
+output "staging_api_url" {
+  description = "The URL for the staging API"
+  value       = var.domain_name != "" ? "https://staging.${var.domain_name}" : "http://${aws_lb.sttf_staging_alb.dns_name}"
+}
+
+# SSL Certificate Outputs (only if domain is configured)
+output "ssl_certificate_arn" {
+  description = "The ARN of the SSL certificate (if domain is configured)"
+  value       = var.domain_name != "" ? aws_acm_certificate.sttf_cert[0].arn : "No SSL certificate - using HTTP only"
+}
+
+# VPC Outputs
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = aws_vpc.sttf_vpc.id
+}
+
+output "vpc_cidr_block" {
+  description = "The CIDR block of the VPC"
+  value       = aws_vpc.sttf_vpc.cidr_block
+}
+
+# Bastion Host Outputs
+output "bastion_public_ip" {
+  description = "The public IP of the bastion host"
+  value       = aws_instance.bastion.public_ip
+}
+
+output "bastion_public_dns" {
+  description = "The public DNS of the bastion host"
+  value       = aws_instance.bastion.public_dns
+}
+
+output "ssh_connection_command" {
+  description = "SSH command to connect to bastion host"
+  value       = "ssh -i ~/.ssh/${var.key_pair_name}.pem ec2-user@${aws_instance.bastion.public_ip}"
+}
+
+output "ssh_to_ec2_command" {
+  description = "SSH command to connect to EC2 instances via bastion"
+  value       = "ssh -i ~/.ssh/${var.key_pair_name}.pem -J ec2-user@${aws_instance.bastion.public_ip} ec2-user@<PRIVATE_IP>"
+}
+
 output "prod_db_name" {
   description = "The name of the production database"
   value       = "sttf_api_prod"

@@ -28,3 +28,22 @@ variable "prod_env_vars" {
   type        = map(string)
   default     = {}
 }
+
+# Domain configuration
+variable "domain_name" {
+  description = "Domain name for the API (e.g., api.example.com). Leave empty to use ALB DNS name only."
+  type        = string
+  default     = ""
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID (leave empty to create a new one)"
+  type        = string
+  default     = ""
+}
+
+variable "create_route53_zone" {
+  description = "Whether to create a new Route53 hosted zone"
+  type        = bool
+  default     = false
+}

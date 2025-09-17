@@ -2,6 +2,7 @@
 resource "aws_security_group" "rds_sg" {
   name_prefix = "sttf-rds-"
   description = "Security group for RDS PostgreSQL instances"
+  vpc_id      = aws_vpc.sttf_vpc.id
 
   ingress {
     from_port       = 5432
@@ -19,7 +20,9 @@ resource "aws_security_group" "rds_sg" {
   }
 
   tags = {
-    Name = "sttf-rds-sg"
+    Name        = "sttf-rds-sg"
+    Environment = "shared"
+    Project     = "sttf-hosting"
   }
 }
 
@@ -27,26 +30,15 @@ resource "aws_security_group" "rds_sg" {
 resource "aws_db_subnet_group" "sttf_db_subnet_group" {
   name = "sttf-db-subnet-group"
   subnet_ids = [
-    data.aws_subnet.subnet1.id,
-    data.aws_subnet.subnet2.id
+    aws_subnet.sttf_private_subnet_1.id,
+    aws_subnet.sttf_private_subnet_2.id
   ]
 
   tags = {
-    Name = "sttf-db-subnet-group"
+    Name        = "sttf-db-subnet-group"
+    Environment = "shared"
+    Project     = "sttf-hosting"
   }
-}
-
-# Get subnets for RDS
-data "aws_subnet" "subnet1" {
-  vpc_id            = data.aws_vpc.default.id
-  availability_zone = data.aws_availability_zones.available.names[0]
-  default_for_az    = true
-}
-
-data "aws_subnet" "subnet2" {
-  vpc_id            = data.aws_vpc.default.id
-  availability_zone = data.aws_availability_zones.available.names[1]
-  default_for_az    = true
 }
 
 # Staging RDS Instance

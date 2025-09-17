@@ -29,12 +29,12 @@ def handler(event, context):
     if image_tag == 'latest':
         target_instance_id = staging_instance_id
         container_name = 'sttf-api-staging'
-        secret_name = 'SttfApiStagingContainerSecrets'
+        secret_name = 'SttfApiStagingContainerSecrets-v2'
         print(f"Deploying to staging instance: {target_instance_id}")
     elif image_tag == 'prod':
         target_instance_id = prod_instance_id
         container_name = 'sttf-api-prod'
-        secret_name = 'SttfApiProdContainerSecrets'
+        secret_name = 'SttfApiProdContainerSecrets-v2'
         print(f"Deploying to production instance: {target_instance_id}")
     else:
         print(f"Unknown image tag: {image_tag}. Skipping deployment.")
