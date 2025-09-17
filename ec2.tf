@@ -7,14 +7,14 @@ resource "aws_instance" "sttf_api_staging" {
   key_name               = var.key_pair_name
 
   user_data = base64encode(templatefile("${path.module}/user_data_staging.sh", {
-    ecr_repository_url = aws_ecr_repository.sttf_api.repository_url
-    aws_region         = "eu-central-1"
-    db_endpoint        = aws_db_instance.sttf_api_staging_db.endpoint
-    db_port            = aws_db_instance.sttf_api_staging_db.port
-    db_name            = "sttf_api_staging"
-    db_username        = "sttf_admin"
+    ecr_repository_url  = aws_ecr_repository.sttf_api.repository_url
+    aws_region          = "eu-central-1"
+    db_endpoint         = aws_db_instance.sttf_api_staging_db.endpoint
+    db_port             = aws_db_instance.sttf_api_staging_db.port
+    db_name             = "sttf_api_staging"
+    db_username         = "sttf_admin"
     staging_db_password = var.staging_db_password
-    env_vars           = var.staging_env_vars
+    env_vars            = var.staging_env_vars
   }))
 
   tags = {

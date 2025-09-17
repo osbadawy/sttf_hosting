@@ -14,45 +14,26 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 ./aws/install
 
+# Install jq for JSON processing
+yum install -y jq
+
 # Configure AWS CLI
 aws configure set region ${aws_region}
 
 # Login to ECR
 aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_url}
 
-# Create environment file for staging
-cat > /home/ec2-user/.env << 'EOF'
-# Database configuration (PostgreSQL)
-POSTGRES_HOST=${db_endpoint}
-POSTGRES_PORT=${db_port}
-POSTGRES_DB=${db_name}
-POSTGRES_USER=${db_username}
-POSTGRES_PASSWORD=${staging_db_password}
-
-# Environment
-NODE_ENV=staging
-ENVIRONMENT=staging
-
-# Custom environment variables
-%{ for key, value in env_vars ~}
-${key}=${value}
-%{ endfor ~}
-EOF
-
-# Replace the template variables in the .env file
-sed -i "s/\${db_endpoint}/${db_endpoint}/g" /home/ec2-user/.env
-sed -i "s/\${db_port}/${db_port}/g" /home/ec2-user/.env
-sed -i "s/\${db_name}/${db_name}/g" /home/ec2-user/.env
-sed -i "s/\${db_username}/${db_username}/g" /home/ec2-user/.env
-sed -i "s/\${staging_db_password}/${staging_db_password}/g" /home/ec2-user/.env
-
-# Pull and run the latest image with environment variables
+# Pull and run the latest image with environment variables from Secrets Manager
 docker pull ${ecr_repository_url}:latest
-docker run -d -p 80:80 --name sttf-api-staging --env-file /home/ec2-user/.env ${ecr_repository_url}:latest
+docker run -d -p 5000:5000 --name sttf-api-staging \
+  --env-file <(aws secretsmanager get-secret-value \
+    --secret-id SttfApiStagingContainerSecrets \
+    --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]') \
+  ${ecr_repository_url}:latest
 
 # Create a simple health check
 echo "#!/bin/bash" > /home/ec2-user/health_check.sh
-echo "curl -f http://localhost:80/health || exit 1" >> /home/ec2-user/health_check.sh
+echo "curl -f http://localhost:5000/health || exit 1" >> /home/ec2-user/health_check.sh
 chmod +x /home/ec2-user/health_check.sh
 
 # Add to crontab for periodic health checks
