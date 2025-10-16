@@ -119,3 +119,13 @@ output "prod_db_port" {
   description = "Port of the production database"
   value       = aws_db_instance.sttf_api_prod_db.port
 }
+
+output "prod_db_host" {
+  description = "Host of the production RDS instance"
+  value       = aws_db_instance.sttf_api_prod_db.endpoint
+}
+
+output "prod_db_hostname" {
+  description = "Hostname of the production RDS instance (without port)"
+  value       = split(":", aws_db_instance.sttf_api_prod_db.endpoint)[0]
+}

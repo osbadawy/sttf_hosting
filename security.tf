@@ -53,6 +53,15 @@ resource "aws_security_group" "rds_sg" {
     description     = "PostgreSQL access from EC2 instances"
   }
 
+  # Allow PostgreSQL access from VPC CIDR (for SSH tunnel connections)
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.sttf_vpc.cidr_block]
+    description = "PostgreSQL access from VPC CIDR"
+  }
+
   # Allow all outbound traffic
   egress {
     from_port   = 0
