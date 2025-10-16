@@ -53,6 +53,31 @@ nohup /home/ec2-user/refresh-ecr-credentials.sh > /home/ec2-user/ecr-refresh.log
 # Also login as ec2-user for Docker Compose
 sudo -u ec2-user aws ecr get-login-password --region ${aws_region} | sudo -u ec2-user docker login --username AWS --password-stdin ${ecr_repository_url}
 
+# Create SSL certificates directory
+mkdir -p /home/ec2-user/ssl
+
+# Copy SSL certificate files from Terraform directory
+# Note: These files should be uploaded to the EC2 instance during deployment
+# For now, we'll create placeholder files that will be replaced with actual certificates
+cat > /home/ec2-user/ssl/sttf.api.crt << 'EOF'
+-----BEGIN CERTIFICATE-----
+# SSL certificate will be copied here during deployment
+# Placeholder - replace with actual certificate content
+-----END CERTIFICATE-----
+EOF
+
+cat > /home/ec2-user/ssl/sttf.api.key << 'EOF'
+-----BEGIN PRIVATE KEY-----
+# SSL private key will be copied here during deployment
+# Placeholder - replace with actual private key content
+-----END PRIVATE KEY-----
+EOF
+
+# Set proper permissions for SSL certificates
+chmod 600 /home/ec2-user/ssl/sttf.api.key
+chmod 644 /home/ec2-user/ssl/sttf.api.crt
+chown -R ec2-user:ec2-user /home/ec2-user/ssl
+
 # Create environment file from Secrets Manager
 aws secretsmanager get-secret-value --secret-id ${secrets_arn} --region ${aws_region} --query SecretString --output text | jq -r 'to_entries[] | "\(.key)=\(.value)"' > /home/ec2-user/.env
 
@@ -67,10 +92,17 @@ services:
     restart: unless-stopped
     ports:
       - "5000:5000"
+      - "443:443"
+    volumes:
+      - /home/ec2-user/ssl:/app/ssl:ro
     env_file:
       - .env
+    environment:
+      - SSL_CERT_PATH=/app/ssl/sttf.api.crt
+      - SSL_KEY_PATH=/app/ssl/sttf.api.key
+      - HTTPS_PORT=443
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "https://localhost:443/health", "-k"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -102,12 +134,13 @@ docker-compose up -d
 # Create a simple health check script
 cat > /home/ec2-user/health_check.sh << 'EOF'
 #!/bin/bash
-response=$$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:5000/health)
+# Test HTTPS endpoint
+response=$$(curl -s -o /dev/null -w "%%{http_code}" https://localhost:443/health -k)
 if [ $response -eq 200 ]; then
-    echo "API is healthy"
+    echo "API is healthy (HTTPS)"
     exit 0
 else
-    echo "API is unhealthy (HTTP $response)"
+    echo "API is unhealthy (HTTPS $response)"
     exit 1
 fi
 EOF

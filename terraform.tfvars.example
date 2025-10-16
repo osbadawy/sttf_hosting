@@ -2,5 +2,89 @@
 # terraform.tfvars is ignored by git for security
 
 # Database passwords
-staging_db_password = "your-staging-db-password-here"
+# TODO: Re-enable staging when needed
+# staging_db_password = "your-staging-db-password-here"
 prod_db_password    = "your-production-db-password-here"
+
+# Key pair name
+key_pair_name = "your-key-pair-name"
+
+# TODO: Re-enable staging when needed
+# Environment variables for staging
+# staging_env_vars = {
+#   APP_PORT       = 5000
+#   ENCRYPTION_KEY = "your-staging-encryption-key"
+#   SESSION_SECRET = "your-staging-session-secret"
+#
+#   #Sentry
+#   SENTRY_DSN = "your-sentry-dsn"
+#
+#   #Frontend (will be updated with EC2 public IP after deployment)
+#   WEB_FRONTEND_URL    = "http://STAGING_EC2_IP:5000"
+#   MOBILE_FRONTEND_URL = "http://STAGING_EC2_IP:5000"
+#
+#   # firebase config
+#   FIREBASE_API_KEY             = "your-firebase-api-key"
+#   FIREBASE_AUTH_DOMAIN         = "your-project.firebaseapp.com"
+#   FIREBASE_PROJECT_ID          = "your-project-id"
+#   FIREBASE_STORAGE_BUCKET      = "your-project.firebasestorage.app"
+#   FIREBASE_MESSAGING_SENDER_ID = "your-messaging-sender-id"
+#   FIREBASE_APP_ID              = "your-firebase-app-id"
+#   #service account firebase
+#   FIREBASE_CLIENT_EMAIL = "firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+#   FIREBASE_PRIVATE_KEY  = "-----BEGIN PRIVATE KEY-----\nyour-firebase-private-key\n-----END PRIVATE KEY-----\n"
+#
+#   #Whoop config
+#   WHOOP_CLIENT_ID     = "your-whoop-client-id"
+#   WHOOP_CLIENT_SECRET = "your-whoop-client-secret"
+#   WHOOP_AUTHORIZE_URL = "https://api.prod.whoop.com/oauth/oauth2/auth"
+#   WHOOP_TOKEN_URL     = "https://api.prod.whoop.com/oauth/oauth2/token"
+# }
+
+# Environment variables for production
+prod_env_vars = {
+  APP_PORT       = 5000
+  ENCRYPTION_KEY = "your-production-encryption-key"
+  SESSION_SECRET = "your-production-session-secret"
+
+  #Sentry
+  SENTRY_DSN = "your-sentry-dsn"
+
+  #Frontend (will be updated with EC2 public IP after deployment)
+  WEB_FRONTEND_URL    = "https://sttf.api"
+  MOBILE_FRONTEND_URL = "https://sttf.api"
+
+  # firebase config
+  FIREBASE_API_KEY             = "your-firebase-api-key"
+  FIREBASE_AUTH_DOMAIN         = "your-project.firebaseapp.com"
+  FIREBASE_PROJECT_ID          = "your-project-id"
+  FIREBASE_STORAGE_BUCKET      = "your-project.firebasestorage.app"
+  FIREBASE_MESSAGING_SENDER_ID = "your-messaging-sender-id"
+  FIREBASE_APP_ID              = "your-firebase-app-id"
+  #service account firebase
+  FIREBASE_CLIENT_EMAIL = "firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+  FIREBASE_PRIVATE_KEY  = "-----BEGIN PRIVATE KEY-----\nyour-firebase-private-key\n-----END PRIVATE KEY-----\n"
+
+  #Whoop config
+  WHOOP_CLIENT_ID     = "your-whoop-client-id"
+  WHOOP_CLIENT_SECRET = "your-whoop-client-secret"
+  WHOOP_AUTHORIZE_URL = "https://api.prod.whoop.com/oauth/oauth2/auth"
+  WHOOP_TOKEN_URL     = "https://api.prod.whoop.com/oauth/oauth2/token"
+
+  # INITIAL_SETUP = "true"  # Disabled after initial table creation
+}
+
+# SSL Certificate Configuration
+ssl_certificate = <<EOF
+-----BEGIN CERTIFICATE-----
+# Paste your public certificate content here
+# Replace this entire section with your actual certificate
+-----END CERTIFICATE-----
+EOF
+
+ssl_private_key = <<EOF
+-----BEGIN PRIVATE KEY-----
+# Paste your private key content here
+# Replace this entire section with your actual private key
+-----END PRIVATE KEY-----
+EOF

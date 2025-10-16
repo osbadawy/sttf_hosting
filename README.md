@@ -73,7 +73,7 @@ terraform output
 
 You'll get URLs like:
 - **Staging API**: `http://1.2.3.4:5000`
-- **Production API**: `http://5.6.7.8:5000`
+- **Production API**: `https://sttf.api` (HTTPS on port 443)
 
 ## 🔄 Automatic Updates
 
@@ -156,7 +156,7 @@ Test your APIs:
 curl http://<staging-ip>:5000/health
 
 # Production health check
-curl http://<production-ip>:5000/health
+curl https://sttf.api/health
 ```
 
 ## 🧹 Cleanup

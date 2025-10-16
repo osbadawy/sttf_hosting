@@ -13,6 +13,15 @@ resource "aws_security_group" "sttf_api_sg" {
     description = "HTTP API"
   }
 
+  # Allow HTTPS traffic from anywhere
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS API"
+  }
+
   # Allow SSH access (optional - remove if not needed)
   ingress {
     from_port   = 22
