@@ -42,7 +42,8 @@ resource "aws_iam_role_policy" "secrets_manager_policy" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = [
-          aws_secretsmanager_secret.staging_secrets.arn,
+          # TODO: Re-enable staging when needed
+          # aws_secretsmanager_secret.staging_secrets.arn,
           aws_secretsmanager_secret.prod_secrets.arn
         ]
       }

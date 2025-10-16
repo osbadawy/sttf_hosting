@@ -1,8 +1,9 @@
-variable "staging_db_password" {
-  description = "Password for the staging database"
-  type        = string
-  sensitive   = true
-}
+# TODO: Re-enable staging when needed
+# variable "staging_db_password" {
+#   description = "Password for the staging database"
+#   type        = string
+#   sensitive   = true
+# }
 
 variable "prod_db_password" {
   description = "Password for the production database"
@@ -15,12 +16,13 @@ variable "key_pair_name" {
   type        = string
 }
 
+# TODO: Re-enable staging when needed
 # Environment variables for staging
-variable "staging_env_vars" {
-  description = "Environment variables for staging environment"
-  type        = map(string)
-  default     = {}
-}
+# variable "staging_env_vars" {
+#   description = "Environment variables for staging environment"
+#   type        = map(string)
+#   default     = {}
+# }
 
 # Environment variables for production
 variable "prod_env_vars" {

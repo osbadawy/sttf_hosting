@@ -1,4 +1,4 @@
-# VPC Configuration for ALB
+# Simple VPC Configuration - Public subnets only for cost efficiency
 resource "aws_vpc" "sttf_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "sttf_igw" {
   }
 }
 
-# Public Subnets for ALB
+# Public Subnet 1 (for staging EC2)
 resource "aws_subnet" "sttf_public_subnet_1" {
   vpc_id                  = aws_vpc.sttf_vpc.id
   cidr_block              = "10.0.1.0/24"
@@ -37,6 +37,7 @@ resource "aws_subnet" "sttf_public_subnet_1" {
   }
 }
 
+# Public Subnet 2 (for production EC2)
 resource "aws_subnet" "sttf_public_subnet_2" {
   vpc_id                  = aws_vpc.sttf_vpc.id
   cidr_block              = "10.0.2.0/24"
@@ -48,33 +49,6 @@ resource "aws_subnet" "sttf_public_subnet_2" {
     Environment = "shared"
     Project     = "sttf-hosting"
     Type        = "public"
-  }
-}
-
-# Private Subnets for EC2 instances
-resource "aws_subnet" "sttf_private_subnet_1" {
-  vpc_id            = aws_vpc.sttf_vpc.id
-  cidr_block        = "10.0.10.0/24"
-  availability_zone = data.aws_availability_zones.available.names[0]
-
-  tags = {
-    Name        = "sttf-private-subnet-1"
-    Environment = "shared"
-    Project     = "sttf-hosting"
-    Type        = "private"
-  }
-}
-
-resource "aws_subnet" "sttf_private_subnet_2" {
-  vpc_id            = aws_vpc.sttf_vpc.id
-  cidr_block        = "10.0.20.0/24"
-  availability_zone = data.aws_availability_zones.available.names[1]
-
-  tags = {
-    Name        = "sttf-private-subnet-2"
-    Environment = "shared"
-    Project     = "sttf-hosting"
-    Type        = "private"
   }
 }
 
@@ -94,62 +68,14 @@ resource "aws_route_table" "sttf_public_rt" {
   }
 }
 
-# Route Table Association for Public Subnets
+# Route Table Association for Public Subnet 1
 resource "aws_route_table_association" "sttf_public_rta_1" {
   subnet_id      = aws_subnet.sttf_public_subnet_1.id
   route_table_id = aws_route_table.sttf_public_rt.id
 }
 
+# Route Table Association for Public Subnet 2
 resource "aws_route_table_association" "sttf_public_rta_2" {
   subnet_id      = aws_subnet.sttf_public_subnet_2.id
   route_table_id = aws_route_table.sttf_public_rt.id
-}
-
-# NAT Gateway for Private Subnets
-resource "aws_eip" "sttf_nat_eip" {
-  tags = {
-    Name        = "sttf-nat-eip"
-    Environment = "shared"
-    Project     = "sttf-hosting"
-  }
-}
-
-resource "aws_nat_gateway" "sttf_nat_gw" {
-  allocation_id = aws_eip.sttf_nat_eip.id
-  subnet_id     = aws_subnet.sttf_public_subnet_1.id
-
-  tags = {
-    Name        = "sttf-nat-gw"
-    Environment = "shared"
-    Project     = "sttf-hosting"
-  }
-
-  depends_on = [aws_internet_gateway.sttf_igw]
-}
-
-# Route Table for Private Subnets
-resource "aws_route_table" "sttf_private_rt" {
-  vpc_id = aws_vpc.sttf_vpc.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.sttf_nat_gw.id
-  }
-
-  tags = {
-    Name        = "sttf-private-rt"
-    Environment = "shared"
-    Project     = "sttf-hosting"
-  }
-}
-
-# Route Table Association for Private Subnets
-resource "aws_route_table_association" "sttf_private_rta_1" {
-  subnet_id      = aws_subnet.sttf_private_subnet_1.id
-  route_table_id = aws_route_table.sttf_private_rt.id
-}
-
-resource "aws_route_table_association" "sttf_private_rta_2" {
-  subnet_id      = aws_subnet.sttf_private_subnet_2.id
-  route_table_id = aws_route_table.sttf_private_rt.id
 }

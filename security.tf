@@ -1,16 +1,16 @@
 # Security Group for EC2 instances
 resource "aws_security_group" "sttf_api_sg" {
   name_prefix = "sttf-api-"
-  description = "Security group for STTF API servers"
+  description = "Security group for STTF API EC2 instances"
   vpc_id      = aws_vpc.sttf_vpc.id
 
-  # Allow traffic from ALB on port 5000
+  # Allow HTTP traffic from anywhere
   ingress {
-    from_port       = 5000
-    to_port         = 5000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.sttf_alb_sg.id]
-    description     = "API traffic from ALB"
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP API"
   }
 
   # Allow SSH access (optional - remove if not needed)
@@ -19,9 +19,10 @@ resource "aws_security_group" "sttf_api_sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "SSH access"
+    description = "SSH"
   }
 
+  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -32,6 +33,36 @@ resource "aws_security_group" "sttf_api_sg" {
 
   tags = {
     Name        = "sttf-api-sg"
+    Environment = "shared"
+    Project     = "sttf-hosting"
+  }
+}
+
+# Security Group for RDS
+resource "aws_security_group" "rds_sg" {
+  name_prefix = "sttf-rds-"
+  description = "Security group for RDS PostgreSQL instances"
+  vpc_id      = aws_vpc.sttf_vpc.id
+
+  # Allow PostgreSQL access from EC2 instances
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sttf_api_sg.id]
+    description     = "PostgreSQL access from EC2 instances"
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "sttf-rds-sg"
     Environment = "shared"
     Project     = "sttf-hosting"
   }
