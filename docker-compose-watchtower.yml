@@ -1,0 +1,21 @@
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower-prod-ecr
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ec2-user/.docker/config.json:/config.json
+      - helper:/go/bin
+    environment:
+      - HOME=/
+      - PATH=$PATH:/go/bin
+      - AWS_REGION=eu-central-1
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=true
+    command: sttf-api-prod
+volumes:
+  helper:
+    external: true

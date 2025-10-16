@@ -53,10 +53,63 @@ sudo -u ec2-user aws ecr get-login-password --region ${aws_region} | sudo -u ec2
 # Create environment file from Secrets Manager
 aws secretsmanager get-secret-value --secret-id ${secrets_arn} --region ${aws_region} --query SecretString --output text | jq -r 'to_entries[] | "\(.key)=\(.value)"' > /home/ec2-user/.env
 
-# Create docker-compose file with watchtower
-cat > /home/ec2-user/docker-compose.yml << EOF
-version: '3.8'
+# Set up ECR credential helper for Watchtower
+echo "🔧 Setting up ECR credential helper for Watchtower..."
 
+# Create ECR credential helper Dockerfile
+mkdir -p /home/ec2-user/ecr-credential-helper
+cat > /home/ec2-user/ecr-credential-helper/Dockerfile << 'EOF'
+FROM golang:1.21
+ENV GO111MODULE off
+ENV CGO_ENABLED 0
+ENV REPO github.com/awslabs/amazon-ecr-credential-helper/ecr-login/cli/docker-credential-ecr-login
+RUN go get -u $REPO
+RUN rm /go/bin/docker-credential-ecr-login
+RUN go build \
+ -o /go/bin/docker-credential-ecr-login \
+ /go/src/$REPO
+WORKDIR /go/bin/
+EOF
+
+# Create helper volume
+docker volume create helper
+echo "✅ Created helper volume"
+
+# Build ECR credential helper image
+echo "🏗️ Building ECR credential helper..."
+docker build -f /home/ec2-user/ecr-credential-helper/Dockerfile -t aws-ecr-dock-cred-helper /home/ec2-user/ecr-credential-helper/
+
+# Build the credential helper command and store it in the volume
+echo "📦 Building credential helper command..."
+docker run -d --rm --name aws-cred-helper --volume helper:/go/bin aws-ecr-dock-cred-helper
+
+# Wait for the build to complete
+sleep 10
+
+# Clean up the build container
+docker stop aws-cred-helper 2>/dev/null || true
+
+echo "✅ ECR credential helper setup complete!"
+
+# Create Docker config for ECR credential helper
+mkdir -p /home/ec2-user/.docker
+cat > /home/ec2-user/.docker/config.json << EOF
+{
+   "credsStore" : "ecr-login",
+   "HttpHeaders" : {
+     "User-Agent" : "Docker-Client/19.03.1 (linux)"
+   },
+   "auths" : {
+     "${ecr_repository_url}" : {}
+   },
+   "credHelpers": {
+     "${ecr_repository_url}" : "ecr-login"
+   }
+}
+EOF
+
+# Create docker-compose file with ECR-enabled Watchtower
+cat > /home/ec2-user/docker-compose.yml << EOF
 services:
   api:
     image: ${ecr_repository_url}:latest
@@ -74,18 +127,26 @@ services:
       start_period: 40s
 
   watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower-staging
+    image: containrrr/watchtower:latest
+    container_name: watchtower-staging-ecr
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /root/.docker:/root/.docker:ro
+      - /home/ec2-user/.docker/config.json:/config.json
+      - helper:/go/bin
     environment:
+      - HOME=/
+      - PATH=\$PATH:/go/bin
+      - AWS_REGION=${aws_region}
       - WATCHTOWER_POLL_INTERVAL=300
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_INCLUDE_STOPPED=true
       - WATCHTOWER_REVIVE_STOPPED=true
     command: sttf-api-staging
+
+volumes:
+  helper:
+    external: true
 EOF
 
 # Set proper permissions

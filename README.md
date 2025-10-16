@@ -12,7 +12,7 @@ Internet → EC2 Instances (Public) → RDS Databases (Public Subnets)
 - **2x EC2 Instances** (t3.micro) - Staging & Production
 - **2x RDS PostgreSQL** (db.t3.micro) - Staging & Production databases  
 - **1x ECR Repository** - Container image storage
-- **Watchtower** - Automatic container updates every 5 minutes
+- **Watchtower with ECR Support** - Automatic container updates every 5 minutes using AWS ECR credential helper
 
 ## 💰 Cost Estimate
 
@@ -142,6 +142,49 @@ terraform apply
 - **AWS Secrets Manager** stores all sensitive environment variables securely
 - **IAM roles** provide least-privilege access to ECR and Secrets Manager
 
+## 🔐 ECR Authentication & Watchtower
+
+This infrastructure uses the official AWS ECR credential helper approach for Watchtower authentication, as recommended by the [Watchtower documentation](https://containrrr.dev/watchtower/private-registries/#credential_helpers).
+
+### How it Works
+
+1. **ECR Credential Helper**: Automatically built during instance initialization
+2. **Docker Volume**: Stores the credential helper binary in a persistent volume
+3. **Docker Config**: Configured to use the ECR credential helper for authentication
+4. **Watchtower Integration**: Mounts the credential helper and config for seamless ECR access
+
+### Automatic Setup
+
+The ECR credential helper is automatically configured during `terraform apply`:
+
+- **Production**: `watchtower-prod-ecr` container with ECR support
+- **Staging**: `watchtower-staging-ecr` container with ECR support
+- **Polling**: Checks for updates every 5 minutes
+- **Token Refresh**: Automatically handles ECR token expiration (every 12 hours)
+
+### Manual Testing
+
+Test Watchtower ECR authentication:
+
+```bash
+# On production instance
+cd /home/ec2-user
+docker-compose run --rm watchtower sttf-api-prod --run-once
+
+# On staging instance  
+cd /home/ec2-user
+docker-compose run --rm watchtower sttf-api-staging --run-once
+```
+
+You should see no "no basic auth credentials" errors if working correctly.
+
+### Troubleshooting ECR Authentication
+
+1. **Check credential helper volume**: `docker volume ls | grep helper`
+2. **Verify Docker config**: `cat /home/ec2-user/.docker/config.json`
+3. **Check Watchtower logs**: `docker logs watchtower-prod-ecr`
+4. **Test ECR access**: `aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 700903221803.dkr.ecr.eu-central-1.amazonaws.com`
+
 ## 🏥 Health Checks
 
 Each instance includes a health check script:
@@ -183,9 +226,11 @@ terraform destroy
 4. Ensure ECR login is working
 
 ### Watchtower Not Updating
-1. Check watchtower logs: `docker logs watchtower-staging`
-2. Verify ECR permissions
-3. Check if new images are being pushed to ECR
+1. Check watchtower logs: `docker logs watchtower-prod-ecr` or `docker logs watchtower-staging-ecr`
+2. Verify ECR credential helper: `docker volume ls | grep helper`
+3. Check Docker config: `cat /home/ec2-user/.docker/config.json`
+4. Test ECR authentication manually
+5. Check if new images are being pushed to ECR
 
 ### Database Connection Issues
 1. Verify security groups allow port 5432
