@@ -3,10 +3,10 @@
 ## SSH Tunnel Settings (VS Code Database Client)
 ```
 Enable: ON
-Host: 63.180.45.110
+Host: 63.179.161.254
 Username: ec2-user
 Auth: Key
-Private Key Path: /home/amitn/.ssh/EC2Staging.pem
+Private Key Path: /home/amitn/.ssh/EC2Prod
 Port: 22
 Connect Timeout: 5000ms
 ```
@@ -24,7 +24,7 @@ Password: [from Terraform variables]
 ```
 RDS Endpoint: sttf-api-prod-db.czsuc4ms8v8w.eu-central-1.rds.amazonaws.com
 RDS Port: 5432
-EC2 Public IP: 63.180.45.110
+EC2 Public IP: 63.179.161.254
 SSH Key: EC2Staging.pem
 ```
 
