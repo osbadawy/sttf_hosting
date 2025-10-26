@@ -7,11 +7,11 @@ set -e
 
 # Configuration
 EC2_IP="63.180.45.110"  # Update this with your actual EC2 IP
-KEY_PATH="~/.ssh/EC2Staging.pem"  # Update this with your actual key path
+KEY_PATH="~/.ssh/EC2Prod"  # Update this with your actual key path
 USER="ec2-user"
 
 # SSL certificate files
-CERT_FILE="ssl/cloudflare-origin.pem"
+CERT_FILE="ssl/cloudflare-origin-fullchain.pem"
 KEY_FILE="ssl/cloudflare-origin.key"
 
 # Check if certificate files exist
