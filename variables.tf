@@ -49,3 +49,18 @@ variable "create_route53_zone" {
   type        = bool
   default     = false
 }
+
+# SSL certificate configuration
+variable "ssl_certificate" {
+  description = "SSL certificate content (cert.pem)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "ssl_private_key" {
+  description = "SSL private key content (key.pem)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

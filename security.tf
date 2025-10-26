@@ -4,13 +4,13 @@ resource "aws_security_group" "sttf_api_sg" {
   description = "Security group for STTF API EC2 instances"
   vpc_id      = aws_vpc.sttf_vpc.id
 
-  # Allow HTTP traffic from anywhere
+  # Allow HTTP traffic from anywhere (for nginx)
   ingress {
-    from_port   = 5000
-    to_port     = 5000
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP API"
+    description = "HTTP (nginx)"
   }
 
   # Allow HTTPS traffic from anywhere

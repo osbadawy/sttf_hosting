@@ -21,15 +21,23 @@
 #   }
 # }
 
-# Elastic IP for Production Instance
+# Elastic IP for Production Instance (created separately to persist)
 resource "aws_eip" "sttf_api_prod_eip" {
-  instance = aws_instance.sttf_api_prod.id
-
   tags = {
     Name        = "sttf-api-prod-eip"
     Environment = "production"
     Project     = "sttf-hosting"
   }
+
+  lifecycle {
+    prevent_destroy = true  # Protect the IP from accidental deletion
+  }
+}
+
+# Associate the EIP with the instance
+resource "aws_eip_association" "sttf_api_prod_eip_assoc" {
+  instance_id   = aws_instance.sttf_api_prod.id
+  allocation_id = aws_eip.sttf_api_prod_eip.id
 }
 
 # Production EC2 Instance
@@ -45,6 +53,9 @@ resource "aws_instance" "sttf_api_prod" {
     ecr_repository_url = aws_ecr_repository.sttf_api.repository_url
     aws_region         = "eu-central-1"
     secrets_arn        = aws_secretsmanager_secret.prod_secrets.arn
+    ssl_cert_pem       = file("${path.module}/ssl/cert.pem")
+    ssl_key_pem        = file("${path.module}/ssl/key.pem")
+    nginx_conf         = file("${path.module}/ssl/nginx.conf")
   }))
 
   tags = {
